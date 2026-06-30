@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Unisys HCMS Cloud Portal</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:       #01040a;
+    --bg-1:     #060d17;
+    --bg-2:     #0a1422;
+    --bg-3:     #0f1d2e;
+    --teal:     #00c896;
+    --teal-dim: rgba(0,200,150,.12);
+    --teal-bd:  rgba(0,200,150,.22);
+    --tx-1:     #e8eef5;
+    --tx-2:     #9ab0c8;
+    --tx-3:     #5a7a96;
+    --bd:       rgba(255,255,255,.07);
+    --sans:     'Inter', system-ui, -apple-system, sans-serif;
+    --serif:    'Georgia', serif;
+    --mono:     'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+    --radius:   10px;
+  }
+
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--tx-1);
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* NAV */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(1,4,10,.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--bd);
+    padding: 0 2rem;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 56px;
+  }
+  .nav-brand {
+    display: flex; align-items: center; gap: 10px;
+    font-family: var(--serif); font-size: 17px; color: var(--tx-1);
+    text-decoration: none;
+  }
+  .nav-brand .dot { color: var(--teal); }
+  .nav-logo {
+    width: 28px; height: 28px; border-radius: 7px;
+    background: var(--teal-dim); border: 1px solid var(--teal-bd);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 600; color: var(--teal);
+  }
+  .nav-links { display: flex; gap: 6px; }
+  .nav-links a {
+    font-size: 13px; color: var(--tx-2); text-decoration: none;
+    padding: 6px 14px; border-radius: 6px;
+    transition: background .15s, color .15s;
+  }
+  .nav-links a:hover { background: var(--bg-2); color: var(--tx-1); }
+  .nav-cta {
+    background: var(--teal-dim); border: 1px solid var(--teal-bd);
+    color: var(--teal) !important;
+  }
+  .nav-cta:hover { background: rgba(0,200,150,.2) !important; }
+
+  /* HERO */
+  .hero {
+    max-width: 900px; margin: 0 auto;
+    padding: 7rem 2rem 5rem;
+    text-align: center;
+  }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--teal-dim); border: 1px solid var(--teal-bd);
+    color: var(--teal); font-size: 12px; padding: 5px 14px;
+    border-radius: 20px; margin-bottom: 2rem; letter-spacing: .04em;
+  }
+  .hero-badge span { width: 6px; height: 6px; border-radius: 50%; background: var(--teal); animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+  h1 {
+    font-family: var(--serif); font-size: clamp(2rem, 5vw, 3.2rem);
+    font-weight: 400; line-height: 1.2; margin-bottom: 1.25rem;
+    color: var(--tx-1);
+  }
+  h1 em { font-style: normal; color: var(--teal); }
+  .hero-sub {
+    font-size: 16px; color: var(--tx-2); max-width: 580px; margin: 0 auto 2.5rem;
+    line-height: 1.7;
+  }
+  .hero-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 11px 22px; border-radius: var(--radius);
+    font-size: 14px; font-weight: 500; cursor: pointer;
+    text-decoration: none; transition: all .15s; border: 1px solid transparent;
+  }
+  .btn-primary {
+    background: var(--teal); color: #01040a;
+    box-shadow: 0 4px 18px rgba(0,200,150,.25);
+  }
+  .btn-primary:hover { background: #00e0a8; box-shadow: 0 6px 24px rgba(0,200,150,.35); }
+  .btn-outline {
+    background: transparent; color: var(--tx-1);
+    border-color: var(--bd);
+  }
+  .btn-outline:hover { background: var(--bg-2); border-color: rgba(255,255,255,.12); }
+
+  /* STATS */
+  .stats-bar {
+    max-width: 760px; margin: 0 auto;
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    border: 1px solid var(--bd); border-radius: 14px;
+    overflow: hidden; margin-bottom: 5rem;
+  }
+  .stat-item {
+    padding: 1.5rem; text-align: center;
+    border-right: 1px solid var(--bd);
+  }
+  .stat-item:last-child { border-right: none; }
+  .stat-num { font-size: 28px; font-weight: 600; color: var(--teal); }
+  .stat-lbl { font-size: 12px; color: var(--tx-3); margin-top: 4px; letter-spacing: .02em; }
+
+  /* SECTIONS */
+  section { max-width: 900px; margin: 0 auto; padding: 0 2rem 5rem; }
+  .section-label {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 11px; font-weight: 500; letter-spacing: .08em;
+    color: var(--teal); text-transform: uppercase; margin-bottom: 1.25rem;
+  }
+  .section-label::before { content:''; width:20px; height:1px; background:var(--teal); }
+  h2 {
+    font-family: var(--serif); font-size: 1.75rem; font-weight: 400;
+    color: var(--tx-1); margin-bottom: .75rem;
+  }
+  .section-sub { font-size: 15px; color: var(--tx-2); margin-bottom: 2.5rem; max-width: 560px; }
+
+  /* FEATURE CARDS */
+  .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .card {
+    background: var(--bg-1); border: 1px solid var(--bd);
+    border-radius: 14px; padding: 1.5rem;
+    transition: border-color .2s, background .2s;
+  }
+  .card:hover { border-color: var(--teal-bd); background: var(--bg-2); }
+  .card-icon {
+    width: 36px; height: 36px; border-radius: 9px;
+    background: var(--teal-dim); border: 1px solid var(--teal-bd);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; margin-bottom: 1rem;
+  }
+  .card h3 { font-size: 15px; font-weight: 500; color: var(--tx-1); margin-bottom: .4rem; }
+  .card p { font-size: 13px; color: var(--tx-2); line-height: 1.6; }
+
+  /* TECH STACK */
+  .stack-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .stack-item {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--bg-1); border: 1px solid var(--bd);
+    border-radius: var(--radius); padding: 1rem 1.25rem;
+  }
+  .stack-icon {
+    width: 36px; height: 36px; border-radius: 8px;
+    background: var(--bg-3); display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
+  }
+  .stack-info { flex: 1; }
+  .stack-name { font-size: 14px; font-weight: 500; color: var(--tx-1); }
+  .stack-desc { font-size: 12px; color: var(--tx-3); margin-top: 2px; }
+  .stack-tag {
+    font-size: 11px; color: var(--teal); background: var(--teal-dim);
+    border: 1px solid var(--teal-bd); padding: 2px 8px; border-radius: 20px;
+  }
+
+  /* DEPLOY */
+  .deploy-box {
+    background: var(--bg-1); border: 1px solid var(--bd);
+    border-radius: 14px; overflow: hidden;
+  }
+  .deploy-header {
+    padding: .75rem 1.25rem; border-bottom: 1px solid var(--bd);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .deploy-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .deploy-title { font-size: 12px; color: var(--tx-3); margin-left: 4px; }
+  .deploy-body { padding: 1.25rem 1.5rem; }
+  .cmd {
+    font-family: var(--mono); font-size: 14px;
+    color: var(--teal); background: var(--bg-2);
+    border: 1px solid var(--bd); border-radius: var(--radius);
+    padding: 1rem 1.25rem; margin: .75rem 0;
+    overflow-x: auto; white-space: nowrap;
+  }
+  .cmd .prompt { color: var(--tx-3); user-select: none; }
+  .deploy-note { font-size: 13px; color: var(--tx-3); margin-top: .5rem; }
+  .deploy-note a { color: var(--teal); text-decoration: none; }
+  .deploy-note a:hover { text-decoration: underline; }
+
+  /* PIPELINE */
+  .pipeline {
+    display: flex; align-items: center; gap: 0;
+    background: var(--bg-1); border: 1px solid var(--bd);
+    border-radius: 14px; overflow: hidden;
+  }
+  .pipe-step {
+    flex: 1; padding: 1.5rem; text-align: center;
+    border-right: 1px solid var(--bd); position: relative;
+  }
+  .pipe-step:last-child { border-right: none; }
+  .pipe-step::after {
+    content: '→';
+    position: absolute; right: -10px; top: 50%; transform: translateY(-50%);
+    color: var(--teal); font-size: 16px; z-index: 1;
+  }
+  .pipe-step:last-child::after { display: none; }
+  .pipe-icon { font-size: 22px; margin-bottom: .5rem; }
+  .pipe-label { font-size: 13px; font-weight: 500; color: var(--tx-1); }
+  .pipe-sub { font-size: 11px; color: var(--tx-3); margin-top: 3px; }
+
+  /* FOOTER */
+  footer {
+    border-top: 1px solid var(--bd);
+    padding: 2rem;
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 13px; color: var(--tx-3); flex-wrap: wrap; gap: 1rem;
+  }
+  footer a { color: var(--tx-2); text-decoration: none; }
+  footer a:hover { color: var(--teal); }
+  .footer-links { display: flex; gap: 1.5rem; }
+
+  /* DIVIDER */
+  .divider { height: 1px; background: var(--bd); max-width: 900px; margin: 0 auto 5rem; }
+
+  @media (max-width: 680px) {
+    .cards { grid-template-columns: 1fr; }
+    .stack-grid { grid-template-columns: 1fr; }
+    .stats-bar { grid-template-columns: repeat(2,1fr); }
+    .stat-item:nth-child(2) { border-right: none; }
+    .pipeline { flex-direction: column; }
+    .pipe-step { border-right: none; border-bottom: 1px solid var(--bd); }
+    .pipe-step::after { content: '↓'; right: auto; bottom: -12px; left: 50%; transform: translateX(-50%); top:auto; }
+    nav .nav-links { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-brand" href="#">
+    <div class="nav-logo">H</div>
+    Unisys HCMS<span class="dot">.</span>
+  </a>
+  <div class="nav-links">
+    <a href="#features">Features</a>
+    <a href="#stack">Stack</a>
+    <a href="#deploy">Deploy</a>
+    <a href="https://github.com/gauravheychawla/HCMS_Portal" class="nav-cta">GitHub →</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge">
+    <span></span>
+    Unisys CloudOps · Internal Portal
+  </div>
+  <h1>The <em>HCMS</em> Cloud Portal<br>for your ops team</h1>
+  <p class="hero-sub">
+    A self-hosted single-page application for CloudOps engineers — browse runbooks,
+    manage cloud integrations, and monitor agents from one clean interface.
+  </p>
+  <div class="hero-actions">
+    <a class="btn btn-primary" href="#deploy">⚡ Deploy with Docker</a>
+    <a class="btn btn-outline" href="https://github.com/gauravheychawla/HCMS_Portal">View Source →</a>
+  </div>
+</div>
+
+<!-- STATS -->
+<div style="max-width:900px;margin:0 auto;padding:0 2rem 5rem">
+  <div class="stats-bar">
+    <div class="stat-item"><div class="stat-num">16</div><div class="stat-lbl">Runbooks</div></div>
+    <div class="stat-item"><div class="stat-num">24</div><div class="stat-lbl">Cloud Agents</div></div>
+    <div class="stat-item"><div class="stat-num">32</div><div class="stat-lbl">Integrations</div></div>
+    <div class="stat-item"><div class="stat-num">1</div><div class="stat-lbl">Docker Command</div></div>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="section-label">What's inside</div>
+  <h2>Everything ops in one place</h2>
+  <p class="section-sub">Purpose-built for CloudOps engineers who need fast access to operational knowledge without switching tools.</p>
+  <div class="cards">
+    <div class="card">
+      <div class="card-icon">📖</div>
+      <h3>Runbooks</h3>
+      <p>16 operational runbooks covering CPU, memory, disk, networking, and cloud-specific failure patterns — with PowerShell and Bash remediation scripts.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🔌</div>
+      <h3>Integrations</h3>
+      <p>32 cloud service connectors. View and manage all platform integrations — AWS, Azure, monitoring tools, and alerting pipelines — from a single panel.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🤖</div>
+      <h3>Agents</h3>
+      <p>Monitor 24 cloud agents across your infrastructure. Real-time status, health indicators, and configuration controls in one view.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🔍</div>
+      <h3>Grouped navigation</h3>
+      <p>Runbooks are organised into collapsible groups — CPU, Memory, Disk — so engineers find what they need without scrolling through flat lists.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🌐</div>
+      <h3>No CDN dependency</h3>
+      <p>All JavaScript assets (React, ReactDOM, Lucide) are served locally from inside the container. Works on air-gapped and restricted enterprise networks.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🚀</div>
+      <h3>Zero configuration</h3>
+      <p>One Docker command to run. No database, no auth service, no environment variables required. Just pull and go.</p>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- TECH STACK -->
+<section id="stack">
+  <div class="section-label">Architecture</div>
+  <h2>Lightweight by design</h2>
+  <p class="section-sub">A thin Flask server serves a pre-compiled React SPA. No runtime build step, no database, no external services.</p>
+  <div class="stack-grid">
+    <div class="stack-item">
+      <div class="stack-icon">🐍</div>
+      <div class="stack-info">
+        <div class="stack-name">Python + Flask</div>
+        <div class="stack-desc">HTTP server — serves static files only. ~20 lines of code.</div>
+      </div>
+      <span class="stack-tag">Backend</span>
+    </div>
+    <div class="stack-item">
+      <div class="stack-icon">⚛️</div>
+      <div class="stack-info">
+        <div class="stack-name">React 18</div>
+        <div class="stack-desc">Pre-compiled SPA. No Node.js needed at runtime.</div>
+      </div>
+      <span class="stack-tag">Frontend</span>
+    </div>
+    <div class="stack-item">
+      <div class="stack-icon">🐳</div>
+      <div class="stack-info">
+        <div class="stack-name">Docker</div>
+        <div class="stack-desc">python:3.13-slim base image. Single port: 5000/TCP.</div>
+      </div>
+      <span class="stack-tag">Container</span>
+    </div>
+    <div class="stack-item">
+      <div class="stack-icon">⚙️</div>
+      <div class="stack-info">
+        <div class="stack-name">GitHub Actions</div>
+        <div class="stack-desc">Auto-builds and pushes Docker image on every commit to main.</div>
+      </div>
+      <span class="stack-tag">CI/CD</span>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- DEPLOY -->
+<section id="deploy">
+  <div class="section-label">Deployment</div>
+  <h2>Run it anywhere</h2>
+  <p class="section-sub">Any machine with Docker installed can pull and run the portal in seconds. No additional setup required.</p>
+  <div class="deploy-box">
+    <div class="deploy-header">
+      <div class="deploy-dot" style="background:#ff5f57"></div>
+      <div class="deploy-dot" style="background:#febc2e"></div>
+      <div class="deploy-dot" style="background:#28c840"></div>
+      <span class="deploy-title">Terminal</span>
+    </div>
+    <div class="deploy-body">
+      <p style="font-size:13px;color:var(--tx-3);margin-bottom:.5rem">Pull and start the container:</p>
+      <div class="cmd"><span class="prompt">$ </span>docker run -d -p 5000:5000 --name hcms-portal gauravheychawladocker/hcms-cloud-portal:latest</div>
+      <p style="font-size:13px;color:var(--tx-3);margin:.75rem 0 .5rem">Or use docker-compose:</p>
+      <div class="cmd"><span class="prompt">$ </span>docker-compose up -d</div>
+      <p class="deploy-note">Then open <a href="http://localhost:5000">http://localhost:5000</a> in your browser.</p>
+      <p class="deploy-note" style="margin-top:.4rem">Replace <code style="font-family:var(--mono);font-size:12px;color:var(--tx-2)">localhost</code> with the server IP when running on a remote host.</p>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- PIPELINE -->
+<section>
+  <div class="section-label">CI/CD pipeline</div>
+  <h2>Ship with confidence</h2>
+  <p class="section-sub">Every push to main triggers an automated build and publish to Docker Hub — no manual steps.</p>
+  <div class="pipeline">
+    <div class="pipe-step">
+      <div class="pipe-icon">💾</div>
+      <div class="pipe-label">Code push</div>
+      <div class="pipe-sub">git push → main</div>
+    </div>
+    <div class="pipe-step">
+      <div class="pipe-icon">⚙️</div>
+      <div class="pipe-label">GitHub Actions</div>
+      <div class="pipe-sub">Ubuntu runner</div>
+    </div>
+    <div class="pipe-step">
+      <div class="pipe-icon">🐳</div>
+      <div class="pipe-label">Docker build</div>
+      <div class="pipe-sub">python:3.13-slim</div>
+    </div>
+    <div class="pipe-step">
+      <div class="pipe-icon">📦</div>
+      <div class="pipe-label">Push to Hub</div>
+      <div class="pipe-sub">:latest + :sha</div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div>
+    <strong style="color:var(--tx-2)">Unisys HCMS Cloud Portal</strong> &nbsp;·&nbsp;
+    Built by Gaurav Chawla @ Unisys &nbsp;·&nbsp; 2026
+  </div>
+  <div class="footer-links">
+    <a href="https://github.com/gauravheychawla/HCMS_Portal">GitHub</a>
+    <a href="https://hub.docker.com/r/gauravheychawladocker/hcms-cloud-portal">Docker Hub</a>
+    <a href="http://localhost:5000">Launch Portal</a>
+  </div>
+</footer>
+
+</body>
+</html>

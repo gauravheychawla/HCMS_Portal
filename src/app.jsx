@@ -1893,10 +1893,10 @@ function EstatesView({ enabled, toggle }) {
     <div className="view">
       <div className="view-head"><div><h1 className="view-title">Estates</h1><div className="view-sub">Connect any infrastructure estate through a read-and-act adapter. Toggle one off to remove it from agent scope everywhere.</div></div></div>
       <div className="grid" style={{ gridTemplateColumns: "repeat(2,1fr)" }}>
-        {ESTATES.map(e => {
-          const Icon = e.icon; const off = !enabled[e.id];
+        {ESTATES.filter(e => enabled[e.id]).map(e => {
+          const Icon = e.icon; const off = false;
           return (
-            <div key={e.id} className="card" style={{ padding: 0, overflow: "hidden", opacity: off ? 0.6 : 1 }}>
+            <div key={e.id} className="card" style={{ padding: 0, overflow: "hidden", opacity: 1 }}>
               <div style={{ height: 3, background: e.c }} />
               <div style={{ padding: 19 }}>
                 <div style={{ display: "flex", alignItems: "flex-start", gap: 13 }}>
