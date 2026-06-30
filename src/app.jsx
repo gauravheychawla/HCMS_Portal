@@ -428,6 +428,24 @@ const ESTATES = [
   { id: "hyperv", name: "Microsoft Hyper-V", kind: "Private cloud", c: "var(--violet)", nodes: 188, vms: 2210, signals: 7, health: 96.8, region: "DC-Central", icon: Boxes },
 ];
 
+/* Maps estate id → set of integration/MCP names that belong exclusively to that estate */
+const ESTATE_INTEGRATIONS = {
+  azure:  new Set(["Azure Monitor", "Azure DevOps Repos", "Azure Backup", "Azure MCP"]),
+  aws:    new Set(["AWS MCP", "AWS CodeCommit", "AWS Backup"]),
+  gcp:    new Set(["Google Cloud MCP"]),
+  vmware: new Set(["vCenter / vSphere MCP"]),
+  oci:    new Set(["Oracle Cloud MCP"]),
+  hyperv: new Set([]),
+};
+
+function estateHiddenNames(enabled) {
+  const s = new Set();
+  Object.entries(ESTATE_INTEGRATIONS).forEach(([id, names]) => {
+    if (!enabled[id]) names.forEach(n => s.add(n));
+  });
+  return s;
+}
+
 const DOMAINS = {
   servers: { label: "Servers & Compute", icon: Server, c: "var(--azure)" },
   storage: { label: "Storage", icon: Database, c: "var(--cyan)" },
@@ -1371,10 +1389,12 @@ function AutonomyPicker({ value, onChange, compact }) {
   );
 }
 
-function RecurringBoard({ compact, filter = "all" }) {
+function RecurringBoard({ compact, filter = "all", enabled }) {
   const openDetail = React.useContext(DetailCtx);
   const aut = React.useContext(AutonomyCtx);
-  const rows = OPS_AGENTS.filter(a => filter === "all" || a.cat === filter);
+  const rows = OPS_AGENTS
+    .filter(a => filter === "all" || a.cat === filter)
+    .filter(a => !enabled || a.scope.some(id => enabled[id]));
   const list = compact ? rows.slice(0, 6) : rows;
   const autoCount = rows.filter(a => aut.levels[a.id] === "auto").length;
   return (
@@ -1645,11 +1665,12 @@ function ResolutionTheater() {
   );
 }
 
-function AgentStrip() {
+function AgentStrip({ enabled }) {
   const aut = React.useContext(AutonomyCtx);
+  const visible = enabled ? L1_AGENTS.filter(a => a.est.some(id => enabled[id])) : L1_AGENTS;
   return (
     <div className="grid" style={{ gridTemplateColumns: "repeat(5,1fr)" }}>
-      {L1_AGENTS.map((a) => {
+      {visible.map((a) => {
         const d = DOMAINS[a.dom]; const Icon = d.icon;
         return (
           <div key={a.id} className="card" style={{ padding: 14 }}>
@@ -1853,7 +1874,7 @@ function AgentsView({ enabled }) {
         {Object.entries(CATS).map(([k, c]) => <Chip key={k} on={cat === k} onClick={() => setCat(k)} label={c.label} c={c.c} />)}
       </div>
 
-      <RecurringBoard filter={cat} />
+      <RecurringBoard filter={cat} enabled={enabled} />
 
       <div style={{ marginTop: 14 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 9, margin: "4px 2px 12px" }}>
@@ -1861,7 +1882,7 @@ function AgentsView({ enabled }) {
           <span className="card-t">Incident-response agents · L1 autonomous tier</span>
           <span className="card-s" style={{ marginLeft: "auto" }}>engaged on the unplanned, before any L2 handoff</span>
         </div>
-        <AgentStrip />
+        <AgentStrip enabled={enabled} />
       </div>
     </div>
   );
@@ -4591,7 +4612,8 @@ function AddMenu({ options, onPick }) {
   );
 }
 
-function IntegrationsView() {
+function IntegrationsView({ enabled }) {
+  const hiddenNames = enabled ? estateHiddenNames(enabled) : new Set();
   const groups = [
     { key: "Observability", icon: Eye, c: "var(--cyan)", desc: "Where signals come from — metrics, traces and logs across the estate." },
     { key: "AIOps", icon: Sparkles, c: "var(--azure)", desc: "Correlation and noise reduction before anything reaches an agent." },
@@ -4617,13 +4639,19 @@ function IntegrationsView() {
       <div className="view-head"><div><h1 className="view-title">Integrations fabric</h1><div className="view-sub">Connect, disconnect or add tooling per section. CloudOps listens to observability, leans on AIOps to cut noise, versions every automation in Git, and reaches the estate through MCP tool-servers.</div></div></div>
       <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
         {groups.map(g => {
-          const G = g.icon; const list = items[g.key]; const onCount = list.filter(x => x.on).length;
+          const G = g.icon;
+          const list = items[g.key].filter(t => !hiddenNames.has(t.name));
+          const hiddenCount = items[g.key].length - list.length;
+          const onCount = list.filter(x => x.on).length;
           return (
             <div key={g.key} className="card">
               <div className="card-h">
                 <div style={{ width: 30, height: 30, borderRadius: 8, display: "grid", placeItems: "center", background: "var(--bg-3)", border: `1px solid ${g.c}` }}><G size={15} color={g.c} /></div>
                 <div><div className="card-t">{g.key}</div><div className="card-s" style={{ fontFamily: "var(--sans)", color: "var(--tx-3)" }}>{g.desc}</div></div>
-                <span className="card-s" style={{ marginLeft: "auto" }}>{onCount} of {list.length} on</span>
+                <span className="card-s" style={{ marginLeft: "auto" }}>
+                  {onCount} of {list.length} on
+                  {hiddenCount > 0 && <span style={{ marginLeft: 6, color: "var(--tx-4)", fontFamily: "var(--mono)", fontSize: 9 }}>· {hiddenCount} hidden (estate off)</span>}
+                </span>
                 <AddMenu options={availFor(g.key)} onPick={(it) => addItem(g.key, it)} />
               </div>
               <div className="grid" style={{ gridTemplateColumns: "repeat(4,1fr)", gap: 0 }}>
@@ -4650,11 +4678,16 @@ function IntegrationsView() {
           <div className="card-h">
             <div style={{ width: 30, height: 30, borderRadius: 8, display: "grid", placeItems: "center", background: "var(--bg-3)", border: "1px solid var(--teal)" }}><Cpu size={15} color="var(--teal)" /></div>
             <div><div className="card-t">MCP servers</div><div className="card-s" style={{ fontFamily: "var(--sans)", color: "var(--tx-3)" }}>The tool layer agents call to read and act on the estate — one governed contract per platform.</div></div>
-            <span className="card-s" style={{ marginLeft: "auto" }}>{mcps.filter(m => m.on).length} of {mcps.length} connected</span>
+            {(() => { const vis = mcps.filter(m => !hiddenNames.has(m.name)); const hid = mcps.length - vis.length; return (
+              <span className="card-s" style={{ marginLeft: "auto" }}>
+                {vis.filter(m => m.on).length} of {vis.length} connected
+                {hid > 0 && <span style={{ marginLeft: 6, color: "var(--tx-4)", fontFamily: "var(--mono)", fontSize: 9 }}>· {hid} hidden (estate off)</span>}
+              </span>
+            ); })()}
             <AddMenu options={availMcp} onPick={addMcp} />
           </div>
           <div className="grid" style={{ gridTemplateColumns: "repeat(2,1fr)", gap: 0 }}>
-            {mcps.map((m, i) => (
+            {mcps.filter(m => !hiddenNames.has(m.name)).map((m, i) => (
               <div key={m.name} style={{ padding: 16, borderRight: i % 2 === 0 ? "1px solid var(--bd-1)" : "none", borderTop: i >= 2 ? "1px solid var(--bd-1)" : "none", opacity: m.on ? 1 : 0.5 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 11 }}>
                   <div style={{ width: 30, height: 30, borderRadius: 8, display: "grid", placeItems: "center", background: "var(--bg-3)", border: `1px solid ${m.c}` }}><Cpu size={14} color={m.c} /></div>
@@ -5089,7 +5122,7 @@ function ThroneCloudOps() {
           {view === "agents" && <AgentsView enabled={enabled} />}
           {view === "automation" && <RunbooksView enabled={enabled} />}
           {view === "cloud-runbooks" && <CloudRunbooksView enabled={enabled} />}
-          {view === "integrations" && <IntegrationsView />}
+          {view === "integrations" && <IntegrationsView enabled={enabled} />}
           {view === "settings" && <SettingsView enabled={enabled} toggle={toggle} threshold={threshold} setThreshold={setThreshold} />}
         </div>
       </div>
