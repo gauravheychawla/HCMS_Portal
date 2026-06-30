@@ -1,0 +1,8 @@
+services:
+  hcms-portal:
+    build: .
+    image: hcms-cloud-portal:latest
+    container_name: hcms-cloud-portal
+    ports:
+      - "5000:5000"
+    restart: unless-stopped
